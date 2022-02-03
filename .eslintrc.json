@@ -23,6 +23,7 @@
     "rules": {
         "require-jsdoc": "off",
         "object-curly-spacing": ["error", "always", {"arraysInObjects": false}],
-        "react/react-in-jsx-scope": "off"
+        "react/react-in-jsx-scope": "off",
+        "operator-linebreak": ["error", "after", {"overrides": { "?": "before", ":": "before"}}]
     }
 }

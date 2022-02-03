@@ -1,6 +1,7 @@
 import type { ActionFunction } from 'remix';
 import { redirect, useActionData, json } from 'remix';
 import { db } from '~/utils/db.server';
+import { requireUserId } from '~/utils/session.server';
 
 function validateJokeContent(content: string) {
   if (content.length < 10) {
@@ -31,6 +32,7 @@ const badRequest = (data: ActionData) => json(data, { status: 400 });
 export const action: ActionFunction = async ({
   request,
 }) => {
+  const userId = await requireUserId(request);
   const form = await request.formData();
   const name = form.get('name');
   const content = form.get('content');
@@ -54,7 +56,9 @@ export const action: ActionFunction = async ({
     return badRequest({ fieldErrors, fields });
   }
 
-  const joke = await db.joke.create({ data: fields });
+  const joke = await db.joke.create({
+    data: { ...fields, jokesterId: userId },
+  });
   return redirect(`/jokes/${joke.id}`);
 };
 
@@ -77,8 +81,8 @@ export default function NewJokeRoute() {
                 undefined
               }
               aria-describedby={
-                actionData?.fieldErrors?.name ?
-                  'name error' : undefined
+                actionData?.fieldErrors?.name
+                  ? 'name error' : undefined
               }
             />
           </label>
@@ -103,9 +107,9 @@ export default function NewJokeRoute() {
                 undefined
               }
               aria-describedby={
-                actionData?.fieldErrors?.content ?
-                  'content-error' :
-                  undefined
+                actionData?.fieldErrors?.content
+                  ? 'content-error'
+                  : undefined
               }
             />
           </label>
