@@ -1,22 +1,46 @@
-import { LoaderFunction, ActionFunction, redirect } from 'remix';
-import { Link, useLoaderData, useCatch, useParams } from 'remix';
+import type { LoaderFunction, ActionFunction, MetaFunction } from 'remix';
+import {
+  Link,
+  useLoaderData,
+  useCatch,
+  useParams,
+  redirect,
+  Form,
+} from 'remix';
 import type { Joke } from '@prisma/client';
 import { db } from '~/utils/db.server';
 import {
   requireUserId,
-  // getUserId
+  getUserId,
 } from '~/utils/session.server';
 
 type LoaderData = {
   joke: Joke;
-  // isOwner: boolean;
+  isOwner: boolean;
+};
+
+export const meta: MetaFunction = ({
+  data,
+}: {
+  data: LoaderData | undefined
+}) => {
+  if (!data) {
+    return {
+      title: 'No joke',
+      description: 'No joke found',
+    };
+  }
+  return {
+    title: `"${data.joke.name}" joke`,
+    description: `Enjoy the "${data.joke.name}" joke and much more`,
+  };
 };
 
 export const loader: LoaderFunction = async ({
   request,
   params,
 }) => {
-  // const userId = await getUserId(request);
+  const userId = await getUserId(request);
   const joke = await db.joke.findUnique({
     where: { id: params.jokeId },
   });
@@ -26,18 +50,18 @@ export const loader: LoaderFunction = async ({
     });
   }
 
-  // const user = await db.user.findUnique({
-  //   where: { id: joke.jokesterId },
-  // });
-  // if (!user) {
-  //   throw new Error(
-  //       'Joke is not formed correctly, there is no user who wrote it',
-  //   );
-  // }
+  const user = await db.user.findUnique({
+    where: { id: joke.jokesterId },
+  });
+  if (!user) {
+    throw new Error(
+        'Joke is not formed correctly, there is no user who wrote it',
+    );
+  }
 
   const data: LoaderData = {
     joke,
-    // isOwner: joke.jokesterId === userId,
+    isOwner: joke.jokesterId === userId,
   };
   return data;
 };
@@ -77,19 +101,9 @@ export default function JokeRoute() {
       <p>Her&apos;s your hilarious joke:</p>
       <p>{data.joke.content}</p>
       <Link to=".">&quot;{data.joke.name}&quot; Permalink</Link>
-      <form method='post'>
-        <input
-          type="hidden"
-          name="_method"
-          value="delete"
-        />
-        <button type="submit" className="button">
-        Delete
-        </button>
-      </form>
 
-      {/* {data.isOwner ? (
-      <form method='post'>
+      {data.isOwner ? (
+      <Form method='post'>
         <input
           type="hidden"
           name="_method"
@@ -98,8 +112,8 @@ export default function JokeRoute() {
         <button type="submit" className="button">
         Delete
         </button>
-      </form>
-      ) : null} */}
+      </Form>
+      ) : null}
 
     </div>
   );
