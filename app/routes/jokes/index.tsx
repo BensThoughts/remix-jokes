@@ -40,7 +40,7 @@ export default function JokesIndexRoute() {
           Written By: {data.user.username}
         </p>
       )}
-      <Link to={data.randomJoke.id}>
+      <Link prefetch="intent" to={data.randomJoke.id}>
         &quot;{data.randomJoke.name}&quot; Permalink
       </Link>
     </div>

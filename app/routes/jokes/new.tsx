@@ -157,7 +157,7 @@ export function CatchBoundary() {
     return (
       <div className="error-container">
         <p>You must be logged in to create a joke.</p>
-        <Link to="/login">Login</Link>
+        <Link prefetch="intent" to="/login">Login</Link>
       </div>
     );
   }
